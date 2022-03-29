@@ -20,11 +20,10 @@ import javax.swing.JFileChooser;
  */
 public class MainWindow extends javax.swing.JFrame {
     
-    private HL7Server listener = new HL7Server();
-    private ListenerLogs listenerLogs = new ListenerLogs();
-    
-    private HL7Client client = new HL7Client();
-    private ClientLogs clientLogs;
+    private final HL7Server listener = new HL7Server();
+    private final ListenerLogs listenerLogs = new ListenerLogs();
+    private final HL7Client client = new HL7Client();
+    private final ClientLogs clientLogs = new ClientLogs();
     
     /**
      * Creates new form MainWindow
@@ -73,7 +72,6 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        messageExplorer.setEditable(false);
         messageExplorer.setColumns(20);
         messageExplorer.setRows(5);
         jScrollPane1.setViewportView(messageExplorer);
@@ -124,14 +122,14 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(remotePortField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sendMessageButton))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(openMessageButton)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 481, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -195,8 +193,7 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         
-        if( clientLogs == null ){
-            clientLogs = new ClientLogs();
+        if( !clientLogs.isRunning() ){
             Thread t = new Thread(clientLogs);
             t.start();
         }
@@ -220,12 +217,12 @@ public class MainWindow extends javax.swing.JFrame {
                     }
                     ArrayList<String> logs = listener.getLogs();
                     listenerLogsField.setText("");
-                    if (logs.size() < 5) {
-                        for (String logItem : logs) {
+                    if(logs.size() < 5) {
+                        for(String logItem : logs) {
                             listenerLogsField.append(logItem + "\n");
                         }
                     } else {
-                        for (String logItem : logs.subList(logs.size() - 5, logs.size())) {
+                        for(String logItem : logs.subList(logs.size() - 5, logs.size())) {
                             listenerLogsField.append(logItem + "\n");
                         }
                     }
@@ -292,6 +289,10 @@ public class MainWindow extends javax.swing.JFrame {
                 senderLogsField.setText("Interrupted while stopping.");
             }
             senderLogsField.setText("Stopped.");
+        }
+        
+        public boolean isRunning(){
+            return running;
         }
     
     }

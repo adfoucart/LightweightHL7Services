@@ -42,7 +42,8 @@ public class HL7Client {
         try {
             response = init.sendAndReceive(parser.parse(msg));
         } catch (LLPException | HL7Exception | IOException ex) {
-            logs.add("Failed to send message.");
+            logs.add("Failed to send message:");
+            logs.add(ex.getMessage());
             return null;
         }
         

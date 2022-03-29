@@ -14,6 +14,7 @@ import ca.uhn.hl7v2.app.HL7Service;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
+import ca.uhn.hl7v2.validation.impl.NoValidation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -25,20 +26,21 @@ import java.util.Map;
 public class HL7Server {
     private HL7Service listener;
     private ArrayList<String> logs;
+    private boolean validate = true;
     
     public HL7Server(){
         logs = new ArrayList();
     }
     
     public void startHL7Listener(int port){
-        System.out.println("Starting HL7 Listener.");
+        logs.add("Starting HL7 Listener on port " + port + ".");
         if( listener == null ){
             HapiContext ctxt = new DefaultHapiContext();
             listener = ctxt.newServer(port, false);
         }
         
         if( isListeningToHL7() ){
-            System.out.println("HL7 Server is already running.");
+            logs.add("HL7 Server is already running.");
             return;
         }
         
@@ -48,14 +50,15 @@ public class HL7Server {
         try {
             listener.startAndWait();
         } catch (InterruptedException ex) {
-            System.out.println("Interrupted HL7 Listener");
+            logs.add("Interrupted HL7 Listener");
         }
         
-        System.out.println("HL7 Server is started.");
+        logs.add("HL7 Server is started.");
     }
     
     public void stopHL7Listener(){
         listener.stop();
+        logs.add("HL7 Server is stopped.");
     }
     
     public boolean isListeningToHL7(){        
@@ -65,11 +68,17 @@ public class HL7Server {
     public ArrayList<String> getLogs() {
         return logs;
     }
+
+    void setValidating(boolean selected) {
+        validate = selected;
+    }
     
     private class ReceiverApplication implements ReceivingApplication<Message> {
         @Override
         public Message processMessage(Message t, Map<String, Object> map) throws ReceivingApplicationException, HL7Exception {
-            String encodedMessage = new DefaultHapiContext().getPipeParser().encode(t);
+            HapiContext ctxt = new DefaultHapiContext();
+            ctxt.getParserConfiguration().setValidating(validate);
+            String encodedMessage = ctxt.getPipeParser().encode(t);
             logs.add("Received message:\n" + encodedMessage + "\n");
             
             try {
